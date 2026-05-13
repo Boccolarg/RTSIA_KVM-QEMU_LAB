@@ -19,7 +19,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGE="${IMAGE:-$HOME/kvm-demo/debian-base.qcow2}"
-echo "Using image: $IMAGE"
+#echo "Using image: $IMAGE"
+#sleep 1  # give the user a moment to read the message before the VM starts
 
 if [[ ! -f "$IMAGE" ]]; then
   echo "ERROR: image not found at $IMAGE"
