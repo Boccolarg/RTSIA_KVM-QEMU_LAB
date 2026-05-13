@@ -6,6 +6,14 @@ Finally, watch the kernel's **admission control** refuse an over-subscription.
 **Prerequisites:** Setup complete. Experiment 05 strongly recommended — you
 need to be comfortable with `chrt`, vCPU TIDs, and host vs guest scheduling.
 
+## Host CPUs used
+This experiment pins **vCPU 0 → host CPU 1** and deliberately runs `stress-ng` on
+the *same* CPU 1 to demonstrate that SCHED_DEADLINE protects the vCPU against
+co-located noise. The recommended cmdline in
+[`../setup/README.md`](../setup/README.md) (`isolcpus=1-3`) keeps the rest of the
+system from also landing on CPU 1, so the only contention is the one we explicitly
+create.
+
 ---
 
 ## What this experiment demonstrates
@@ -71,8 +79,7 @@ Boot the VM:
 ../scripts/vm1.sh
 ```
 
-Capture the PID and the vCPU TIDs (this is the third time we're doing this —
-the recipe should feel automatic by now):
+Capture the PID and the vCPU TIDs:
 
 ```bash
 PID=$(pgrep -nf 'name vm1')

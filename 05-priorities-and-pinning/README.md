@@ -7,6 +7,12 @@ libvirt (`virsh vcpupin`).
 **Prerequisites:** Setup complete. Experiment 02 strongly recommended (you
 need to be comfortable identifying vCPU threads).
 
+## Host CPUs used
+This experiment pins **vCPU 0 → host CPU 2** and **vCPU 1 → host CPU 3**. For clean RT measurements, both CPUs should be isolated. The recommended cmdline in
+[`../setup/README.md`](../setup/README.md) (`isolcpus=1-3`) already covers this.
+Without isolation, expect `Max` latency up to 2–5× higher because the host scheduler may
+place background tasks on the same CPUs.
+
 ---
 
 ## What this experiment demonstrates

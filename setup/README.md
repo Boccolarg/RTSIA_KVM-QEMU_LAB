@@ -112,34 +112,40 @@ Several experiments measure latency. The host kernel command line affects how cl
 those measurements are. For best results, edit `/etc/default/grub` and set:
 
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3 nohz_full=1 isolcpus=1 rcu_nocbs=1 irqaffinity=0,2-15 processor.max_cstate=1 intel_idle.max_cstate=0 idle=poll"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3 nohz_full=1-3 isolcpus=1-3 rcu_nocbs=1-3 irqaffinity=0,4-15 processor.max_cstate=1 intel_idle.max_cstate=0 idle=poll"
 ```
 
 Then `sudo update-grub` and reboot.
 
 What each option does:
 
-| Option                          | Effect                                                                          |
-| ------------------------------- | ------------------------------------------------------------------------------- |
-| `isolcpus=1`                    | Remove CPU 1 from the kernel's load balancer; only explicitly-pinned tasks land there |
-| `nohz_full=1`                   | Disable the periodic scheduler tick on CPU 1 when only one task is running       |
-| `rcu_nocbs=1`                   | Offload RCU callbacks for CPU 1 to other CPUs                                    |
-| `irqaffinity=0,2-15`            | Route IRQs away from CPU 1                                                       |
-| `processor.max_cstate=1` / `intel_idle.max_cstate=0` | Forbid deep C-states (which add wake-up latency)             |
-| `idle=poll`                     | Spin instead of halting when idle. **Power-hungry** but lowest wake latency.    |
+| Option                          | Effect                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------- |
+| `isolcpus=1-3`                  | Remove CPUs 1, 2, 3 from the kernel's load balancer; only explicitly-pinned tasks land there |
+| `nohz_full=1-3`                 | Disable the periodic scheduler tick on CPUs 1–3 when only one task is running         |
+| `rcu_nocbs=1-3`                 | Offload RCU callbacks for CPUs 1–3 to other CPUs                                      |
+| `irqaffinity=0,4-15`            | Route IRQs away from CPUs 1–3                                                         |
+| `processor.max_cstate=1`        | Cap the generic ACPI idle driver at C1 (HLT). Used on **AMD** and as fallback on Intel. |
+| `intel_idle.max_cstate=0`       | Disable the **Intel-only** `intel_idle` driver, which ignores the ACPI cap above. On AMD this option is silently ignored — harmless. |
+| `idle=poll`                     | Spin instead of halting when idle. **Power-hungry** but lowest wake latency.          |
 
-> Adjust the CPU number(s) if your machine has a different topology. On a 16-thread
-> CPU, isolating one logical CPU is fine. If you have a P-core/E-core hybrid,
-> consider isolating a P-core.
+> Three isolated CPUs are sized for this lab: Exp 05 pins to CPUs 2–3, Exp 06–08
+> use CPU 1, and Exp 07/08 also use CPU 2 or 3 for a noisy neighbor. On a 16-thread
+> machine, 3 isolated cores leave 13 for normal work.
 
-> **`idle=poll` keeps an isolated CPU at 100 % utilization in `top` by design.**
-> It is not a bug. Comment it out if you care about battery life.
+> Adjust the CPU numbers if your machine has a different topology — e.g. on an
+> 8-core CPU you might use `isolcpus=1-3` still, or trim to `1-2`. On a P-core/E-core
+> hybrid, prefer isolating P-cores.
+
+> **`idle=poll` keeps the isolated CPUs at 100 % utilization in `top` by design.**
+> It is not a bug. Comment it out if you care about battery life and can accept
+> ~1–10 µs of additional wake-up latency.
 
 Verify after reboot:
 
 ```bash
 cat /proc/cmdline
-cat /sys/devices/system/cpu/isolated   # should print '1'
+cat /sys/devices/system/cpu/isolated   # should print '1-3'
 ```
 
 ---

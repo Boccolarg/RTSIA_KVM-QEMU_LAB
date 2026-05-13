@@ -12,6 +12,12 @@ recommended.
 > you have **two** VMs and finite host CPUs — the world your hypervisor
 > actually runs in.
 
+## Host CPUs used
+
+This experiment uses **CPU 1** for the critical VM and **CPU 2** for the noisy
+neighbor (across stages). Both should be isolated; the recommended cmdline in
+[`../setup/README.md`](../setup/README.md) (`isolcpus=1-3`) covers this.
+
 ---
 
 ## What this experiment demonstrates

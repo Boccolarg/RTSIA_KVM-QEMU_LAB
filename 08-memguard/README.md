@@ -14,6 +14,13 @@ software and building a kernel module requires kernel headers.
 > lab was developed on: 6.8 and 6.17 stock plus 6.17.5-rt7 PREEMPT_RT).
 > Newer kernels may need a small patch — see the GitHub issues page.
 
+## Host CPUs used
+This experiment pins the **critical VM to CPU 1** and the **memory-bandwidth
+attacker VM to CPU 3** — different physical cores, so any remaining interference
+must come from a shared resource other than CPU time (which is exactly the point of
+the experiment). The recommended cmdline in
+[`../setup/README.md`](../setup/README.md) (`isolcpus=1-3`) covers both.
+
 ---
 
 ## What this experiment demonstrates
