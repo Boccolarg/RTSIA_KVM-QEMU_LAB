@@ -18,7 +18,7 @@ Three concepts from the lesson:
    to KVM through `/dev/kvm` via `ioctl`.
 3. **The split matters in practice.** With KVM, guest instructions run
    natively on the CPU (using Intel VT-x or AMD-V). Without KVM, QEMU falls
-   back to dynamic binary translation (TCG) — the same image still boots, but
+   back to dynamic binary translation (TCG); the same image still boots, but
    every guest instruction is translated to host instructions by QEMU. You'll
    see the cost directly.
 
@@ -41,7 +41,7 @@ qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 1G \
 ```
 
 `time` wraps the whole thing so you can see how long the boot took once you
-exit. Keep the terminal in view while booting — the Debian boot messages
+exit. Keep the terminal in view while booting; the Debian boot messages
 should scroll by quickly.
 
 **Expected output (boot phase):**
@@ -65,7 +65,7 @@ You should reach the login prompt in roughly **10–20 seconds**.
   top -bn1 -p "$(pgrep -nf 'name vm1')"
   ```
 
-  The QEMU process is using **modest CPU** — typically a few percent on idle,
+  The QEMU process is using **modest CPU**, typically a few percent on idle,
   a brief spike during boot. The host kernel is doing most of the work via
   KVM, and the host CPU is running guest instructions natively.
 
@@ -99,7 +99,7 @@ Alternatively you can use the script provided in this folder:
 ```
 
 **What this does.** Same image, same VM size, but the `-accel tcg` flag forces
-QEMU to use its **Tiny Code Generator** — the dynamic binary translator the
+QEMU to use its **Tiny Code Generator**, the dynamic binary translator the
 slides described. Every guest instruction is now translated into host
 instructions by QEMU itself, in user-space, with no hardware help. `-cpu max`
 gives the guest as rich a virtual CPU as TCG can emulate (without it, you
@@ -132,7 +132,7 @@ When you've seen enough, log in (eventually) and `poweroff`, or hit
 
 ## Step 3 — Look at what KVM physically *is*
 
-While no VM is running (or with vm1 running again — your choice):
+While no VM is running (or with vm1 running again, your choice):
 
 ```bash
 ls -l /dev/kvm
@@ -162,11 +162,11 @@ ccp                   147456  1 kvm_amd
 - **Two modules**: the generic `kvm` module (architecture-independent core)
   and the architecture-specific module `kvm_amd` (or `kvm_intel`). This is
   exactly the split the slides described:
-    - `kvm.ko` — the **kernel module** that implements vCPU and MMU, exposing
+    - `kvm.ko`: the **kernel module** that implements vCPU and MMU, exposing
       `/dev/kvm`.
-    - `kvm-amd.ko` / `kvm-intel.ko` — the **arch-specific module** that knows
+    - `kvm-amd.ko` / `kvm-intel.ko`: the **arch-specific module** that knows
       how to talk to AMD-V / VT-x.
-- The user-space side — the **QEMU process** — was what you ran in Steps 1 and
+- The user-space side (the **QEMU process**) was what you ran in Steps 1 and
   2. It's the third piece of the slide's three-piece architecture.
 
 ---
@@ -191,7 +191,7 @@ ccp                   147456  1 kvm_amd
 
 - The flag is `-enable-kvm` (long form) or `-accel kvm` (newer form, both
   work). Some distributions ship `qemu-kvm` as an alias that has it on by
-  default — on Debian/Mint it's not aliased, so we set it explicitly.
+  default; on Debian/Mint it's not aliased, so we set it explicitly.
 - `-cpu host` exposes the host's full CPU model to the guest, which is the
   best performance choice when migration to a different CPU is not required.
   Alternatives are `-cpu qemu64` (a small portable subset) or named models
@@ -232,7 +232,7 @@ To exit QEMU when the guest is hung: **Ctrl-A then X**.
 ## Going further
 
 - Run `qemu-system-x86_64 --help | head -40` and skim the accelerator section.
-  Besides `kvm` and `tcg`, you'll see `xen`, `hax`, `whpx`, `nvmm`, `hvf` —
+  Besides `kvm` and `tcg`, you'll see `xen`, `hax`, `whpx`, `nvmm`, `hvf`:
   these are the analogous mechanisms on other hypervisors / operating systems.
 - For an even more dramatic TCG-vs-KVM comparison, try a CPU-intensive
   benchmark inside the guest, e.g. `openssl speed` or `stress-ng --cpu 2`.

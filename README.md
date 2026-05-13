@@ -51,7 +51,7 @@ What you will learn, in a nutshell:
 2. **The production view**: how real-world tools (libvirt and its CLI `virsh`) manage VMs without changing the underlying machinery (Exp 3).
 3. **I/O paths**: where virtualization overhead comes from at the device level, and how `virtio` reduces it (Exp 4).
 4. **Scheduling for RT**: how a VM is a process that can be pinned and prioritized, how `SCHED_DEADLINE` provides bandwidth-based guarantees (Exp 5 and 6).
-5. **Beyond pinning**: when CPU isolation isn't enough, because contention shifts to other shared resources — cgroups, memory bandwidth (Exp 7 and 8).
+5. **Beyond pinning**: when CPU isolation isn't enough, because contention shifts to other shared resources: cgroups, memory bandwidth (Exp 7 and 8).
 
 ---
 
@@ -96,7 +96,7 @@ The lab was developed on AMD (Ryzen 7 8845HS), but every experiment works unchan
 | Nested page tables                   | NPT                | EPT                 |
 | QEMU / KVM / libvirt commands        | identical          | identical           |
 
-For everything else — `taskset`, `chrt`, `cyclictest`, `virsh`, perf events, cgroups, memguard — the commands are the same on both vendors.
+For everything else (`taskset`, `chrt`, `cyclictest`, `virsh`, perf events, cgroups, memguard), the commands are the same on both vendors.
 
 ---
 
@@ -104,17 +104,17 @@ For everything else — `taskset`, `chrt`, `cyclictest`, `virsh`, perf events, c
 
 Each experiment's `README.md` follows the same template:
 
-- **Goal** — one sentence, what you'll see by the end.
-- **What this experiment demonstrates** — the underlying concept.
-- **Setup** — anything to do before starting.
-- **Step N: <action>** — numbered steps, each with:
+- **Goal**: one sentence, what you'll see by the end.
+- **What this experiment demonstrates**: the underlying concept.
+- **Setup**: anything to do before starting.
+- **Step N: <action>**, numbered steps, each with:
   - The command(s) to run.
-  - **What this does** — what the command actually does, line by line.
-  - **Expected output** — a sample of what you should see (your numbers will differ, but the shape should match).
-  - **What to look for / things to note** — annotations on the output.
-- **Summary — what you should have observed** — bullet list of takeaways.
-- **Cleanup** — how to stop everything cleanly before the next experiment.
-- **Going further** — optional pointers if you want to dig deeper.
+  - **What this does**: what the command actually does, line by line.
+  - **Expected output**: a sample of what you should see (your numbers will differ, but the shape should match).
+  - **What to look for / things to note**: annotations on the output.
+- **Summary — what you should have observed**: bullet list of takeaways.
+- **Cleanup**: how to stop everything cleanly before the next experiment.
+- **Going further**: optional pointers if you want to dig deeper.
 
 The commands are copy-pasteable. Where a command needs `sudo`, it's written with `sudo`; where it doesn't, it isn't.
 
@@ -139,7 +139,7 @@ sudo kill -TERM "$PID"      # asks QEMU to power off
 sudo kill -9 "$PID"
 ```
 
-For experiments that use two VMs, run `./scripts/vm2.sh` in another terminal — it forwards SSH to port 2223 and uses its own monitor socket.
+For experiments that use two VMs, run `./scripts/vm2.sh` in another terminal; it forwards SSH to port 2223 and uses its own monitor socket.
 
 ---
 

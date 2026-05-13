@@ -1,7 +1,7 @@
 # Experiment 05 — Priorities and pinning: outside and inside the VM
 
 **Goal:** Use `taskset` and `chrt` to control where the QEMU process runs and
-at what priority — at the level of the entire process, of individual vCPU
+at what priority: at the level of the entire process, of individual vCPU
 threads, and of tasks inside the guest. See how the same operations look in
 libvirt (`virsh vcpupin`).
 **Prerequisites:** Setup complete. Experiment 02 strongly recommended (you
@@ -71,7 +71,7 @@ vCPU threads only:
   14221  11  TS  19 CPU 1/KVM
 ```
 
-Note the TIDs of the vCPU threads — we'll need them. The `CLS` column is
+Note the TIDs of the vCPU threads; we'll need them. The `CLS` column is
 `TS` (TimeSharing, i.e. `SCHED_OTHER`), the default.
 
 For this experiment we'll need these two values; replace them in the
@@ -211,7 +211,7 @@ now an RT task.
 
 > **Why apply to all threads (`-a`).** If you only set FIFO on the main
 > thread, the vCPU threads remain `SCHED_OTHER` and any
-> ordinary host task can preempt them — defeating the purpose. Always use
+> ordinary host task can preempt them, defeating the purpose. Always use
 > `-a` for VM RT priority.
 
 > **Why 50.** It's a typical mid-range RT priority that leaves room for
@@ -240,11 +240,11 @@ chrt -f 80 cyclictest -p 99 -i 200 -D 10 -q
 **What this does.**
 
 - `chrt -f 80` runs the next command (`cyclictest`) at `SCHED_FIFO` 80.
-- `cyclictest` itself **also** sets `-p 99` — the priority of its measurement
+- `cyclictest` itself **also** sets `-p 99`, which is the priority of its measurement
   thread, set internally via `pthread_setschedparam`.
 - `-i 200` is a 200 µs sleep target between iterations.
 - `-D 10` runs for 10 seconds.
-- `-q` is quiet — only print the final summary.
+- `-q` is quiet: only print the final summary.
 
 **Expected output:**
 
@@ -303,7 +303,7 @@ domain XML so they survive reboots. In production:
 </cputune>
 ```
 
-Notice the `<vcpusched>` element — that's the libvirt way to set
+Notice the `<vcpusched>` element: that's the libvirt way to set
 `SCHED_FIFO` priority on vCPU threads. Same effect as `chrt -f`.
 
 ---
@@ -313,7 +313,7 @@ Notice the `<vcpusched>` element — that's the libvirt way to set
 - `taskset -apc` pins an entire VM to a set of host CPUs; `taskset -pc` on
   individual TIDs pins specific vCPUs to specific CPUs.
 - `chrt -f -a -p PRIO PID` moves all threads of the QEMU process to
-  `SCHED_FIFO`. The `-a` flag is essential — without it, vCPU threads stay
+  `SCHED_FIFO`. The `-a` flag is essential; without it, vCPU threads stay
   in `SCHED_OTHER`.
 - In-guest priorities (`chrt -f 80 cyclictest …`) only matter if the host
   also schedules the vCPU thread promptly. The two layers must agree.
@@ -365,10 +365,10 @@ Power off:
 
 ## Going further
 
-- `nice` and `renice` work too — they adjust the `SCHED_OTHER` priority
+- `nice` and `renice` work too; they adjust the `SCHED_OTHER` priority
   (the `NI` column). Useful for non-RT VMs you just want to deprioritize.
 - `cpuset.cpus` and `cpuset.mems` in cgroups v2 give you stronger isolation
-  than `taskset` — they're the cgroup-equivalent of affinity, plus they
+  than `taskset`; they're the cgroup-equivalent of affinity, plus they
   exclude tasks from being moved into the cgroup by other means. We use
   these in Experiment 07.
 - The kernel docs `Documentation/scheduler/sched-rt-group.rst` and

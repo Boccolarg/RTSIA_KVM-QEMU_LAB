@@ -252,7 +252,7 @@ load):**
 | ------------------------------- | -------------- | ------------- | ------ |
 | iperf3 throughput               | ~0.6 Gbit/s    | ~2 Gbit/s     | ~3×    |
 | Total VM-exits per second       | ~100,000+      | ~20,000–40,000| ~3×    |
-| IO_INSTRUCTION fraction         | high (>40%)    | very low (<5%)| —      |
+| IO_INSTRUCTION fraction         | high (>40%)    | very low (<5%)| N/A    |
 
 Numbers vary a lot by host, but **the direction is invariant**: virtio
 delivers more bytes for fewer exits. That's the whole point.
@@ -281,7 +281,7 @@ virtio everywhere.
 ## Things to note
 
 - `iperf3 -c 10.0.2.2` uses QEMU's user-mode networking SLIRP. SLIRP itself
-  is a bottleneck — its peak throughput is well below line rate. For higher
+  is a bottleneck; its peak throughput is well below line rate. For higher
   absolute numbers (and more realistic measurements), use a `tap` bridge.
   For comparing **e1000 vs virtio** the SLIRP bottleneck affects both, so
   the relative ratio is still meaningful.

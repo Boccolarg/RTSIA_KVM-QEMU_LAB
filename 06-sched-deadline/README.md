@@ -3,7 +3,7 @@
 **Goal:** Use `SCHED_DEADLINE` to give a VM's vCPU thread a **guaranteed CPU
 bandwidth** on the host, then do the same for a task **inside the guest**.
 Finally, watch the kernel's **admission control** refuse an over-subscription.
-**Prerequisites:** Setup complete. Experiment 05 strongly recommended — you
+**Prerequisites:** Setup complete. Experiment 05 strongly recommended; you
 need to be comfortable with `chrt`, vCPU TIDs, and host vs guest scheduling.
 
 ## Host CPUs used
@@ -18,7 +18,7 @@ create.
 
 ## What this experiment demonstrates
 
-`SCHED_FIFO` from Experiment 05 gives a task **priority** — it runs whenever
+`SCHED_FIFO` from Experiment 05 gives a task **priority**: it runs whenever
 it wants and preempts everything below it. But it has no notion of "this
 task is entitled to N% of the CPU and no more." A buggy or runaway FIFO task
 can monopolize a CPU.
@@ -26,14 +26,14 @@ can monopolize a CPU.
 `SCHED_DEADLINE` is the Linux implementation of **Constant Bandwidth Server
 (CBS)** over **Earliest Deadline First (EDF)**. You declare a tuple:
 
-> *(runtime, deadline, period)* — "give me up to **runtime** ns of CPU
+> *(runtime, deadline, period)*: "give me up to **runtime** ns of CPU
 > within every **period** ns window; finish by **deadline** ns after my
 > wake-up."
 
 The kernel admits the task only if the total deadline bandwidth in the
 system stays below a system-wide cap (default 95% of one CPU). Once
 admitted, the task is **guaranteed** to receive its runtime in every
-period — no more, no less. Even buggy code can't exceed its share, because
+period, no more, no less. Even buggy code can't exceed its share, because
 the kernel throttles it when the budget is exhausted.
 
 For a VM, this is the cleanest way to say:
@@ -96,7 +96,7 @@ VCPU1=14221       # <-- TID of "CPU 1/KVM"
 > cat /proc/sys/kernel/sched_rt_runtime_us /proc/sys/kernel/sched_rt_period_us
 > ```
 >
-> Default is `950000` over `1000000` — i.e. **95% of one CPU** is the global
+> Default is `950000` over `1000000`, i.e. **95% of one CPU** is the global
 > ceiling shared by all `SCHED_FIFO`, `SCHED_RR`, and `SCHED_DEADLINE` tasks.
 > This is what admission control will enforce.
 
@@ -116,7 +116,7 @@ Pin vCPU 0 to the isolated host CPU 1 (assumes `isolcpus=1` from setup):
 sudo taskset -pc 1 "$VCPU0"
 ```
 
-In a second terminal, start a **noisy neighbor** on the same host CPU 1 —
+In a second terminal, start a **noisy neighbor** on the same host CPU 1,
 to simulate other host work fighting for the vCPU's CPU:
 
 ```bash
@@ -135,11 +135,11 @@ In a third terminal, run `cyclictest` inside the guest, pinned to vCPU 0:
 T: 0 (...) P:99 I:200 C:  50000 Min: 4 Act: 35 Avg: 28 Max: 4327
 ```
 
-**What to look for.** `Max` is high — typically several **ms**. The reason:
+**What to look for.** `Max` is high, typically several **ms**. The reason:
 the vCPU thread is `SCHED_OTHER`, so the host scheduler time-shares CPU 1
 between the QEMU vCPU and the `stress-ng` thread. Whenever stress-ng runs,
 the guest doesn't run, and from inside the guest it looks like a giant
-latency spike — even though the guest itself is doing nothing wrong and has
+latency spike, even though the guest itself is doing nothing wrong and has
 its task at `SCHED_FIFO` 99.
 
 This is the failure mode. The guest cannot diagnose it because the gap
@@ -174,7 +174,7 @@ sudo chrt -d --sched-runtime 5000000 \
 | `-p 0 <tid>`                     | "Priority 0" (unused for DEADLINE) on this TID.        |
 
 Constraint: `runtime ≤ deadline ≤ period`. Here we set `deadline = period`
-(implicit-deadline task — the common case).
+(implicit-deadline task, the common case).
 
 Verify:
 
@@ -276,7 +276,7 @@ Done. 50 iterations completed in 5.0 s. Max iteration duration: 12500 us.
 
 - One iteration of the busy loop takes ~12.5 ms of CPU on this host (your
   number will differ). The kernel grants 10 ms per 100 ms period.
-- The program loops 50 times in 5 s — that is, **10 iterations per second**.
+- The program loops 50 times in 5 s, meaning **10 iterations per second**.
   Each iteration takes 10 ms of CPU, spaced one per 100 ms period. The
   iteration's *wall-clock* duration is `12.5 ms ≈ 10 ms run + ~2.5 ms throttle
   wait until the next period`.
@@ -287,7 +287,7 @@ Done. 50 iterations completed in 5.0 s. Max iteration duration: 12500 us.
 
 Re-apply the host-side deadline to the vCPU (Sub-demo A), restart noise on
 the host CPU, and rerun B.2. The in-guest deadline task still meets its
-budget — because the host is honoring its vCPU's budget.
+budget, because the host is honoring its vCPU's budget.
 
 Now **remove** the host-side deadline, leave noise on:
 
@@ -307,7 +307,7 @@ sudo taskset -c 1 stress-ng --cpu 1 --timeout 60s &
 
 **What to look for.** The in-guest deadline task is **still admitted**
 (the guest kernel is happy: there's bandwidth available *in its own view*).
-But it misses its periods — its iterations are 250+ ms wide. The guest's
+But it misses its periods; its iterations are 250+ ms wide. The guest's
 view is a lie: the kernel running the guest's view is itself being
 preempted by host-side noise that the guest can't see.
 
@@ -342,7 +342,7 @@ sudo chrt -d --sched-runtime 99000000 \
 chrt: failed to set pid 14220's policy: Device or resource busy
 ```
 
-**What to look for.** `EBUSY` — admission control says no. The kernel
+**What to look for.** `EBUSY`: admission control says no. The kernel
 refused to grant 99% bandwidth because the total deadline budget would
 exceed the system cap. This is the protective property of
 `SCHED_DEADLINE`: **the system as a whole cannot be over-subscribed**.
@@ -372,7 +372,7 @@ sched_setattr: EBUSY -- admission control rejected.
 > ```
 >
 > Setting it to `-1` removes the cap entirely. **Don't do that on a shared
-> system** — without the cap, an RT task can starve everything including
+> system**; without the cap, an RT task can starve everything including
 > ssh, your shell, and kernel housekeeping.
 
 ---
@@ -383,7 +383,7 @@ sched_setattr: EBUSY -- admission control rejected.
   on the host: runtime ns per period ns, enforced by the kernel through
   CBS over EDF.
 - Applied to a vCPU thread (Sub-demo A), it makes the VM immune to
-  host-side noisy neighbors on the same CPU — RT latency from inside the
+  host-side noisy neighbors on the same CPU; RT latency from inside the
   guest stays bounded.
 - Applied to a task inside the guest (Sub-demo B), it works, but only
   delivers real guarantees if the host has *also* granted the underlying
@@ -398,7 +398,7 @@ sched_setattr: EBUSY -- admission control rejected.
 
 - `chrt`'s long-form deadline flags are `--sched-runtime`, `--sched-deadline`,
   `--sched-period`, in **nanoseconds**. The order of magnitude is the most
-  common mistake — `5` means 5 ns, not 5 ms.
+  common mistake: `5` means 5 ns, not 5 ms.
 - Constraint: `runtime ≤ deadline ≤ period`, all > 0. The kernel enforces
   this.
 - A `SCHED_DEADLINE` task **cannot fork** by default (`SCHED_FLAG_RESET_ON_FORK`
@@ -438,7 +438,7 @@ pkill -f 'stress-ng --cpu' 2>/dev/null
   the deadline outside libvirt with a wrapper script that runs `chrt -d`
   on the vCPU TIDs after the VM is started.
 - **PREEMPT_RT + SCHED_DEADLINE** is the canonical "real-time as a service"
-  setup — PREEMPT_RT bounds kernel-mode latencies (e.g., spinlocks become
+  setup; PREEMPT_RT bounds kernel-mode latencies (e.g., spinlocks become
   rt_mutex, interrupts become threaded), and SCHED_DEADLINE bounds
   scheduling-mode latencies. Both are needed for sub-100 µs worst-case
   latency on a virtualized RT guest.

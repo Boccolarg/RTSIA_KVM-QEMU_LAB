@@ -2,7 +2,7 @@
 
 **Goal:** See that even with **perfect CPU isolation** (disjoint pinning,
 cgroups, RT priorities), one VM can still wreck another's latency by
-saturating the **memory bandwidth** — a resource shared at the
+saturating the **memory bandwidth**, a resource shared at the
 DRAM-controller level, invisible to the scheduler. Then mitigate it with
 **Memguard**, a kernel module that throttles per-core memory bandwidth.
 **Prerequisites:** Setup complete. Experiments 05 and 07 strongly
@@ -12,11 +12,11 @@ software and building a kernel module requires kernel headers.
 > **Caveat.** Memguard's official kernel support is 5.15+. It has been
 > verified to compile and load cleanly on 6.15 (and on the kernels this
 > lab was developed on: 6.8 and 6.17 stock plus 6.17.5-rt7 PREEMPT_RT).
-> Newer kernels may need a small patch — see the GitHub issues page.
+> Newer kernels may need a small patch; see the GitHub issues page.
 
 ## Host CPUs used
 This experiment pins the **critical VM to CPU 1** and the **memory-bandwidth
-attacker VM to CPU 3** — different physical cores, so any remaining interference
+attacker VM to CPU 3**, on different physical cores, so any remaining interference
 must come from a shared resource other than CPU time (which is exactly the point of
 the experiment). The recommended cmdline in
 [`../setup/README.md`](../setup/README.md) (`isolcpus=1-3`) covers both.
@@ -28,15 +28,15 @@ the experiment). The recommended cmdline in
 Pinning two VMs to disjoint physical CPUs (Exp 07 Stage 2) gives each
 VM its own compute. But CPUs are not the only shared resource:
 
-- **Last-level cache (LLC)** — shared across all cores of a socket.
-- **Memory controller / DRAM bandwidth** — shared across all cores.
-- **PCIe bandwidth** — shared.
-- **Power/thermal budget** — shared (frequency scaling).
+- **Last-level cache (LLC)**: shared across all cores of a socket.
+- **Memory controller / DRAM bandwidth**: shared across all cores.
+- **PCIe bandwidth**: shared.
+- **Power/thermal budget**: shared (frequency scaling).
 
 A VM running heavily on a different physical CPU can flood the memory
 controller, causing every other VM's memory accesses to stall. The
 guest experiences this as additional latency that is not attributable to
-"my CPU being preempted" — because it isn't preempted at all. Its CPU
+"my CPU being preempted", because it isn't preempted at all. Its CPU
 just runs slower because it's waiting on memory.
 
 Memguard ([github.com/heechul/memguard](https://github.com/heechul/memguard))
@@ -127,7 +127,7 @@ In Terminal 3, inside vm1, run cyclictest:
 T: 0 (...) P:99 I:200 C: 50000 Min: 4 Act: 12 Avg: 9 Max: 47
 ```
 
-Note this Max — call it **L_baseline** (typically tens of µs on a
+Note this Max: call it **L_baseline** (typically tens of µs on a
 well-configured host).
 
 ---
@@ -165,7 +165,7 @@ sudo perf stat -e LLC-load-misses,LLC-loads -C 3 -- sleep 5
        5.001234567 seconds time elapsed
 ```
 
-That's hundreds of millions of LLC misses per second — i.e. memory traffic
+That's hundreds of millions of LLC misses per second, i.e. memory traffic
 in the multi-GB/s range. **On AMD Ryzen Zen4** (Ryzen 7 8845HS), the L3 is
 ~16 MiB; a 1 GiB working set spills entirely to DRAM. Every miss is a
 DRAM access. This is the entire DRAM bandwidth on this core, going to
@@ -186,12 +186,12 @@ T: 0 (...) P:99 I:200 C: 50000 Min: 4 Act: 47 Avg: 27 Max: 312
 **What to look for.** **`Max` has grown roughly 5–10×** despite vm1 being
 on a different physical CPU. The extra latency is from vm1's vCPU
 stalling on memory while the DRAM controller services vm2's wave of
-cache misses. No scheduler preemption happened — the CPU was running
+cache misses. No scheduler preemption happened; the CPU was running
 guest code the whole time, just running it slower.
 
 This is a hardware-level interference channel that pinning cannot fix.
 
-Leave the attacker running (or restart it — `stress-ng` will exit after
+Leave the attacker running (or restart it; `stress-ng` will exit after
 its 60 s timeout).
 
 ---
@@ -273,7 +273,7 @@ T: 0 (...) P:99 I:200 C: 50000 Min: 4 Act: 14 Avg: 10 Max: 71
 
 **What to look for.** `Max` is back close to **L_baseline**. The attacker
 inside vm2 can still allocate and touch its 1 GiB buffer, but it can no
-longer monopolize the memory controller — Memguard parks its core
+longer monopolize the memory controller; Memguard parks its core
 whenever it tries to exceed 500 MB/s of LLC misses. The bandwidth left
 over for vm1's memory accesses is sufficient to keep its RT loop on time.
 
@@ -288,14 +288,14 @@ sudo perf stat -e LLC-load-misses,LLC-loads -C 3 -- sleep 5
 ```
 
 **Expected output:** the LLC-load-misses rate on CPU 3 is dramatically
-**lower** than in Step 2 — capped near 500 MB/s of misses. The throttle
+**lower** than in Step 2, capped near 500 MB/s of misses. The throttle
 is provably enforced at the hardware-counter level.
 
 ```bash
 top -bn1 -p "$PID2" -o '%CPU' | head
 ```
 
-The vm2 QEMU process's CPU usage is no longer 100% of CPU 3 — Memguard's
+The vm2 QEMU process's CPU usage is no longer 100% of CPU 3; Memguard's
 throttler thread is interleaving with it, so its real utilization drops
 to whatever fraction of bandwidth Memguard allows it to occupy.
 
@@ -342,7 +342,7 @@ counter.
   Linux kernel support is less mature; Memguard remains a good choice
   on Zen-family CPUs (which is what this lab was developed on).
 - The Memguard authors (Heechul Yun et al.) have a series of papers on
-  this approach — "Memguard: Memory Bandwidth Reservation System for
+  this approach: "Memguard: Memory Bandwidth Reservation System for
   Efficient Performance Isolation in Multi-core Platforms" (RTAS 2013)
   is the original. Worth reading for the rationale.
 
@@ -360,7 +360,7 @@ sudo rmmod memguard
 lsmod | grep memguard && echo "still loaded" || echo "unloaded"
 ```
 
-The Memguard sources stay in `~/memguard/` — delete the directory if you
+The Memguard sources stay in `~/memguard/`; delete the directory if you
 want to remove them entirely. Re-running `install-memguard.sh` is
 idempotent and will work as long as the build still applies cleanly to
 your kernel.
@@ -374,7 +374,7 @@ your kernel.
   to other cores), and **memory-aware DVFS**. See
   [github.com/heechul/memguard](https://github.com/heechul/memguard).
 - **MARACAS** (the authors' follow-up paper) extends the idea with
-  *multi-resource* arbitration — caches, memory channels, and prefetchers.
+  *multi-resource* arbitration, covering caches, memory channels, and prefetchers.
 - **`perf c2c`** (cache-to-cache) is a powerful tool to **diagnose**
   false sharing and inter-socket cache traffic before deciding what to
   throttle. Run it on a workload that misbehaves to see exactly which
@@ -383,6 +383,6 @@ your kernel.
   cgroup-like API to Intel CAT (Cache Allocation Technology) and MBA.
   Same conceptual problem, hardware solution; no kernel module needed.
 - For the truly paranoid: **hardware passthrough** (`vfio-pci`) of a
-  real NIC, real storage, real timer to the RT guest — eliminating
+  real NIC, real storage, real timer to the RT guest, eliminating
   every shared software path. This is how some industrial PLC
   hypervisor products work.

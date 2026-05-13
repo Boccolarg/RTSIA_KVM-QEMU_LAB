@@ -1,6 +1,6 @@
 # Experiment 02 — A VM is a process, a vCPU is a thread
 
-**Goal:** Use ordinary Linux process tooling — `ps`, `top`, `htop`, signals —
+**Goal:** Use ordinary Linux process tooling (`ps`, `top`, `htop`, signals)
 to inspect a running VM. Internalize the single most important KVM concept:
 **there is nothing magical about a VM at the host level**.
 **Prerequisites:** Setup complete. No prior experiment required, but
@@ -18,7 +18,7 @@ You'll observe:
 1. The QEMU process and its threads, including the **named vCPU threads** that
    the `debug-threads=on` flag exposes (`CPU 0/KVM`, `CPU 1/KVM`).
 2. Per-thread CPU usage, watching the vCPU threads light up under guest load.
-3. The host can `kill -STOP` the VM, freezing the guest's wall clock — a
+3. The host can `kill -STOP` the VM, freezing the guest's wall clock: a
    sharp demonstration of why host-side scheduling matters for RT VMs.
 
 ---
@@ -29,7 +29,7 @@ You'll observe:
 ../scripts/vm1.sh
 ```
 
-Wait for the login prompt. **Leave this terminal open** — the VM is the
+Wait for the login prompt. **Leave this terminal open**; the VM is the
 foreground job here. Open a second terminal for the rest of the experiment.
 
 In the second terminal:
@@ -40,7 +40,7 @@ echo "QEMU PID = $PID"
 ```
 
 **What this does.** `pgrep -nf` finds the **n**ewest process whose **f**ull
-command line matches `name vm1` — which uniquely identifies our QEMU
+command line matches `name vm1`, which uniquely identifies our QEMU
 instance because of the `-name vm1,debug-threads=on` flag in `vm1.sh`.
 
 Now list all threads of that process:
@@ -51,12 +51,12 @@ ps -L -p "$PID" -o pid,tid,psr,pri,nice,comm
 
 **What this does.** `ps -L` shows threads (the "L" = LWPs, Light Weight
 Processes, Linux's name for threads). Columns:
-- `pid` — process ID (same for every thread).
-- `tid` — **thread** ID, different per thread.
-- `psr` — the CPU on which this thread last ran ("processor").
-- `pri` — kernel priority.
-- `nice` — nice value.
-- `comm` — thread name (this is the column that makes everything readable).
+- `pid`: process ID (same for every thread).
+- `tid`: **thread** ID, different per thread.
+- `psr`: the CPU on which this thread last ran ("processor").
+- `pri`: kernel priority.
+- `nice`: nice value.
+- `comm`: thread name (this is the column that makes everything readable).
 
 **Expected output:**
 
@@ -74,14 +74,14 @@ Processes, Linux's name for threads). Columns:
 **What to look for.**
 
 - The lines with `comm = "CPU 0/KVM"` and `"CPU 1/KVM"` are the **vCPU
-  threads** — one per `-smp N` value. These are the threads that the host
+  threads**, one per `-smp N` value. These are the threads that the host
   kernel schedules in and out of the physical CPU. When one of them is
   running, your guest is running.
-- The line with `comm = "qemu-system-x86"` is the main thread — it ran QEMU's
+- The line with `comm = "qemu-system-x86"` is the main thread; it ran QEMU's
   startup code and now mostly handles signals and the monitor.
 - Other threads (`IO mon_iothread`, `call_rcu`, `SPICE Worker`, etc.) are
   QEMU's worker threads for I/O, monitor, and graphical output.
-- The `PSR` column changes between runs — the host scheduler moves threads
+- The `PSR` column changes between runs; the host scheduler moves threads
   across cores. We'll constrain this in Experiment 05.
 
 > **Without `debug-threads=on`** every thread shows `comm = qemu-system-x86`
@@ -246,7 +246,7 @@ sudo perf stat -p "$PID" sleep 5
 sudo gdb -p "$PID"    # then 'info threads', 'bt', 'detach', 'quit'
 ```
 
-**What to look for.** These tools — `renice`, `perf`, `gdb` — were not
+**What to look for.** These tools (`renice`, `perf`, `gdb`) were not
 written with virtualization in mind, but they work because QEMU is just a
 Linux process. This is the deep point of the whole experiment.
 
@@ -257,8 +257,8 @@ Linux process. This is the deep point of the whole experiment.
 - The QEMU process has one thread per vCPU (`CPU 0/KVM`, `CPU 1/KVM`),
   plus a handful of worker threads.
 - When a guest CPU is busy, the corresponding **host thread** is busy.
-- All standard Linux process tooling — `ps`, `top`, `htop`, `kill`,
-  `renice`, `perf`, `gdb` — works unchanged on a VM.
+- All standard Linux process tooling (`ps`, `top`, `htop`, `kill`,
+  `renice`, `perf`, `gdb`) works unchanged on a VM.
 - `kill -STOP` freezes the guest's wall clock. The guest is not aware of the
   freeze; it perceives time skipping forward. **This is the canonical
   noisy-neighbor failure mode.**
@@ -269,7 +269,7 @@ Linux process. This is the deep point of the whole experiment.
 
 - The thread name `CPU N/KVM` is set by QEMU at vCPU creation time when
   `debug-threads=on` is given. Without it, identifying vCPUs requires walking
-  `/proc/$PID/task/` and parsing each thread's status — possible but tedious.
+  `/proc/$PID/task/` and parsing each thread's status, though possible but tedious.
 - `kill -STOP $PID` stops all threads of the process. Stopping an individual
   thread (`kill -STOP $TID`) also works but only stops that one thread, which
   is rarely what you want for a VM.
@@ -296,7 +296,7 @@ pkill -f 'name vm1'
   and one doing I/O work (`dd if=/dev/zero of=/tmp/x bs=1M count=1000`).
   The I/O case lights up the `IO mon_iothread` and main threads more, not
   just the vCPU threads.
-- Investigate `/proc/$PID/sched` — it shows scheduler statistics for the
+- Investigate `/proc/$PID/sched`: it shows scheduler statistics for the
   process (run time, wait time, voluntary/involuntary switches). These
   numbers also work as a quality-of-service indicator for an RT VM.
 - The `vmtouch`, `pmap`, and `numastat` tools also work on QEMU processes

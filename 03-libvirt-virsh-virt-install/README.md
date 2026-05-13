@@ -97,7 +97,7 @@ virt-install \
 | `--name demo`                           | The libvirt-internal name for the domain.                                                     |
 | `--memory 1024`                         | RAM in MiB.                                                                                   |
 | `--vcpus 2`                             | Two vCPUs (two `CPU N/KVM` host threads, just like Exp 02).                                   |
-| `--cpu host-passthrough`                | Same as raw QEMU's `-cpu host` — expose the host CPU 1:1.                                     |
+| `--cpu host-passthrough`                | Same as raw QEMU's `-cpu host`: expose the host CPU 1:1.                                      |
 | `--osinfo debian12`                     | Tells libvirt which OS this is, so it picks sensible defaults (timers, devices).              |
 | `--disk path=...,bus=virtio`            | Attach our qcow2 as a virtio-blk disk (paravirtualized).                                      |
 | `--network network=default,model=virtio`| Connect to libvirt's `default` NAT network with a virtio-net NIC.                             |
@@ -287,7 +287,7 @@ virt-viewer demo &
 
 **What this does.** Opens a window that displays the guest's framebuffer.
 For a serial-only Debian cloud image, you'll see the text login on the
-graphical terminal too — useful if SSH isn't working.
+graphical terminal too, useful if SSH isn't working.
 
 > If you're connecting to a remote host, `virt-viewer --connect
 > qemu+ssh://user@host/system demo` proxies the console over SSH. This is
@@ -354,7 +354,7 @@ virsh undefine demo --remove-all-storage 2>/dev/null \
 
 - `shutdown` asks the guest to poweroff via ACPI; gives the guest a chance to
   flush, close files, etc.
-- `destroy` is forceful — use only if `shutdown` didn't work.
+- `destroy` is forceful; use only if `shutdown` didn't work.
 - `undefine` removes the domain definition. `--remove-all-storage` also
   deletes the disk image, otherwise the qcow2 stays in `/var/lib/libvirt/images/`.
 

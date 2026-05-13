@@ -16,7 +16,7 @@ reproduction recipe.
 - **Linux distribution** with kernel ≥ 5.15. The lab was developed on Linux Mint 22.3
   with kernel 6.8 and 6.17, but any recent Ubuntu/Debian/Fedora/Arch works.
 - **At least 4 cores and 8 GiB of RAM.** More is better for the multi-VM experiments.
-- **Bare metal** — not nested inside another VM. Nested virtualization is unreliable
+- **Bare metal**, not nested inside another VM. Nested virtualization is unreliable
   for RT measurements and not supported by this lab.
 - **About 8 GiB of free disk space** for the base image plus snapshots.
 
@@ -126,14 +126,14 @@ What each option does:
 | `rcu_nocbs=1-3`                 | Offload RCU callbacks for CPUs 1–3 to other CPUs                                      |
 | `irqaffinity=0,4-15`            | Route IRQs away from CPUs 1–3                                                         |
 | `processor.max_cstate=1`        | Cap the generic ACPI idle driver at C1 (HLT). Used on **AMD** and as fallback on Intel. |
-| `intel_idle.max_cstate=0`       | Disable the **Intel-only** `intel_idle` driver, which ignores the ACPI cap above. On AMD this option is silently ignored — harmless. |
+| `intel_idle.max_cstate=0`       | Disable the **Intel-only** `intel_idle` driver, which ignores the ACPI cap above. On AMD this option is silently ignored, harmless. |
 | `idle=poll`                     | Spin instead of halting when idle. **Power-hungry** but lowest wake latency.          |
 
 > Three isolated CPUs are sized for this lab: Exp 05 pins to CPUs 2–3, Exp 06–08
 > use CPU 1, and Exp 07/08 also use CPU 2 or 3 for a noisy neighbor. On a 16-thread
 > machine, 3 isolated cores leave 13 for normal work.
 
-> Adjust the CPU numbers if your machine has a different topology — e.g. on an
+> Adjust the CPU numbers if your machine has a different topology, e.g. on an
 > 8-core CPU you might use `isolcpus=1-3` still, or trim to `1-2`. On a P-core/E-core
 > hybrid, prefer isolating P-cores.
 
@@ -172,7 +172,7 @@ The script:
 6. Copies the now-baked image to `~/kvm-demo/debian-base.qcow2`.
 
 After this, the experiments use the base image read-only (`-drive snapshot=on`).
-Every boot is a fresh, identical guest — no state leaks between experiments.
+Every boot is a fresh, identical guest; no state leaks between experiments.
 
 > The image lives under `~/kvm-demo/`. The lab references it via the `IMAGE`
 > environment variable, defaulting to `$HOME/kvm-demo/debian-base.qcow2`. To use

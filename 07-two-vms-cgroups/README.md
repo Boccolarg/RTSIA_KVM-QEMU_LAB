@@ -9,7 +9,7 @@ recommended.
 
 > **What this experiment adds that the others don't.** Experiment 05
 > showed how to pin and prioritize one VM. This one shows what happens when
-> you have **two** VMs and finite host CPUs — the world your hypervisor
+> you have **two** VMs and finite host CPUs: the world your hypervisor
 > actually runs in.
 
 ## Host CPUs used
@@ -38,7 +38,7 @@ cgroups internally to enforce `virsh schedinfo`-style limits.
 You'll exercise:
 
 1. The catastrophic case: two VMs sharing a core, one of them noisy.
-2. CPU pinning to disjoint cores — fixes most of it.
+2. CPU pinning to disjoint cores, which fixes most of it.
 3. **A cgroup v2 hierarchy** with `cpu.max` to cap the noisy VM's
    bandwidth regardless of where it runs.
 
@@ -76,7 +76,7 @@ The contract:
   the more restrictive of its own and any ancestor's.
 - **Threads of the same process can be in different cgroups** only with
   the "threaded" controller (advanced, not needed here). Normally, when
-  you put a QEMU PID into a cgroup, **all its threads** go with it —
+  you put a QEMU PID into a cgroup, **all its threads** go with it,
   exactly what we want.
 
 For this experiment, we'll create a small tree:
@@ -103,7 +103,7 @@ mount | grep -w cgroup
 cgroup2 on /sys/fs/cgroup type cgroup2 (rw,nosuid,nodev,noexec,relatime,nsdelegate)
 ```
 
-If you see multiple `cgroup` mounts (one per controller — `cpu`, `cpuset`,
+If you see multiple `cgroup` mounts (one per controller: `cpu`, `cpuset`,
 `memory`, ...), you're on cgroup v1 hybrid mode. Modern Ubuntu/Debian/Mint
 default to v2 unified, which is what we assume here.
 
@@ -161,7 +161,7 @@ T: 0 (...) P:99 I:200 C:  50000 Min: 4 Act: 521 Avg: 287 Max: 12831
 **What to look for.** **`Max` in the tens of milliseconds.** vm1's RT task
 has FIFO priority 99 *inside its guest*, but on the host both QEMU
 processes are `SCHED_OTHER` and share CPU 1 equally. When vm2's vCPU
-thread is on the CPU, vm1's vCPU thread is not — and from vm1's
+thread is on the CPU, vm1's vCPU thread is not; and from vm1's
 perspective, the world stops for ~10 ms at a time.
 
 This is the catastrophic case. Wait for the stress and cyclictest to
@@ -196,11 +196,11 @@ T: 0 (...) P:99 I:200 C:  50000 Min: 3 Act: 14 Avg: 9 Max: 67
 
 **What to look for.** `Max` is back to **tens of µs**. The vCPUs are on
 different physical CPUs and don't time-share. Compute is isolated. We're
-in good shape — for compute.
+in good shape, for compute.
 
 The residual jitter is from shared **other** resources: last-level cache,
 memory bandwidth, IRQs not yet routed away from CPU 1. We don't fix those
-here — Experiment 08 (memguard) addresses memory-bandwidth contention.
+here; Experiment 08 (memguard) addresses memory-bandwidth contention.
 
 ---
 
@@ -240,7 +240,7 @@ files.
 > non-leaf cgroups have member procs. The simplest fix is to set
 > `rtdemo`'s `cgroup.procs` empty (it should already be), or to use a
 > structure where `rtdemo/` is itself empty and only its children hold
-> processes — which is what we're doing.
+> processes, which is what we're doing.
 
 ### 3.1 — Set bandwidth limits
 
@@ -259,7 +259,7 @@ echo "2"            | sudo tee /sys/fs/cgroup/rtdemo/noisy/cpuset.cpus
 ```
 
 **What this does.** `cpu.max` is two numbers: *(quota, period)* in
-microseconds. `30000 100000` means *30 ms of CPU every 100 ms* — a hard
+microseconds. `30000 100000` means *30 ms of CPU every 100 ms*, a hard
 30% cap. The cgroup's processes will be **throttled** if they try to
 exceed this. `cpuset.cpus` restricts which physical CPUs the cgroup's
 threads may run on (cgroup-enforced affinity).
@@ -322,7 +322,7 @@ nr_throttled 248
 throttled_usec 8567000
 ```
 
-**What to look for.** `nr_throttled` is high — almost every period the
+**What to look for.** `nr_throttled` is high; almost every period the
 cgroup hit its cap and was throttled. `throttled_usec` is the cumulative
 time the cgroup spent waiting at the boundary. The cap is being enforced
 in real time.
@@ -362,7 +362,7 @@ are a policy decision.** You need both. Pinning says "where"; cgroups say
 
 - **`cpu.max` in cgroup v2 does NOT govern `SCHED_FIFO`/`SCHED_RR` tasks.**
   RT classes bypass CFS bandwidth control entirely. If our vCPU threads
-  were in `SCHED_FIFO`, the `cpu.max` cap would not apply to them — they'd
+  were in `SCHED_FIFO`, the `cpu.max` cap would not apply to them; they'd
   ignore it. In cgroup v1 there was a separate `cpu.rt_runtime_us` knob
   for RT bandwidth per cgroup; v2 dropped it. The practical implication
   for RT VMs: use `SCHED_DEADLINE` for vCPU threads (Exp 06, admission
@@ -413,7 +413,7 @@ pgrep -af 'name vm[12]' || echo "all VMs stopped"
 - Read `Documentation/admin-guide/cgroup-v2.rst` in the kernel tree. It is
   the canonical reference and surprisingly readable.
 - `cpu.weight` (default 100; range 1–10000) is the **proportional**
-  CPU controller — instead of a hard cap, it sets a relative share when
+  CPU controller; instead of a hard cap, it sets a relative share when
   there is contention. Useful for "vm1 is twice as important as vm2"
   semantics without hard quotas.
 - `memory.max` and `io.max` are the analogous controllers for memory and
