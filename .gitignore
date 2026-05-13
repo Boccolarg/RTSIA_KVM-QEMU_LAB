@@ -25,3 +25,8 @@ modules.order
 *~
 .idea/
 .vscode/
+
+OLD STUFF
+README_OLD.md
+07-two-vms-cgroups/
+08-memguard/

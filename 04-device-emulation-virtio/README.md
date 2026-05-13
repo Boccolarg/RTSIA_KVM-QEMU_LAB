@@ -3,7 +3,11 @@
 **Goal:** Compare a fully-emulated network card (`e1000`) with a
 paravirtualized one (`virtio-net`) in throughput and host CPU usage, then
 **see the underlying mechanism**, the VM-exits, using `perf kvm stat`.
-**Prerequisites:** Setup complete. Experiment 04 needs the e1000 driver, which the cloud kernel doesn't include. Build the derivative image once: `./build-e1000-image.sh`. It creates ~/kvm-demo/debian-e1000.qcow2 (~200 MB) as a qcow2 overlay on top of the base image with only the kernel diff stored. All other experiments keep using debian-base.qcow2 with the fast cloud kernel.
+**Prerequisites:** Setup complete. Experiment 04 needs the e1000 driver, which the cloud kernel doesn't include. Build the derivative image once with: 
+```bash
+./build-e1000-image.sh
+``` 
+It creates ~/kvm-demo/debian-e1000.qcow2 (~200 MB) as a qcow2 overlay on top of the base image with only the kernel diff stored. All other experiments keep using debian-base.qcow2 with the fast cloud kernel.
 
 ---
 

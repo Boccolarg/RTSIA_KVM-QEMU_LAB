@@ -281,7 +281,7 @@ virsh vcpupin demo 1 3
 # Pin the *emulator* (non-vCPU) threads to other CPUs
 virsh emulatorpin demo 0,4-7
 
-# CPU bandwidth cap via cgroups (we explore cgroups in Exp 07)
+# CPU bandwidth cap via cgroups
 virsh schedinfo demo --live \
     --set vcpu_period=1000000 --set vcpu_quota=500000
 

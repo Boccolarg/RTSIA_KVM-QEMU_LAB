@@ -30,7 +30,7 @@ and see a Debian guest boot in ~15 seconds.
 
 ## Lesson map
 
-Six core experiments plus two more complex ones, in suggested order. Each experiment builds on concepts from earlier ones but is self-contained enough to read in isolation.
+Six experiments, in suggested order. Each experiment builds on concepts from earlier ones but is self-contained enough to read in isolation.
 
 | # | Directory                                          | Topic                                                            |
 |---|----------------------------------------------------|------------------------------------------------------------------|
@@ -39,11 +39,7 @@ Six core experiments plus two more complex ones, in suggested order. Each experi
 | 3 | [`03-libvirt-virsh-virt-install/`](03-libvirt-virsh-virt-install/) | Production management: virt-install, virsh, virt-viewer           
 | 4 | [`04-device-emulation-virtio/`](04-device-emulation-virtio/)     | Emulated `e1000` vs paravirtualized `virtio-net`; VM-exit cost    
 | 5 | [`05-priorities-and-pinning/`](05-priorities-and-pinning/)       | `taskset`, `chrt`, and the two levels of scheduling in a VM       
-| 6 | [`06-sched-deadline/`](06-sched-deadline/)                       | `SCHED_DEADLINE` on vCPU threads and inside the guest             
-| 7 | [`07-two-vms-cgroups/`](07-two-vms-cgroups/) | Two VMs competing; isolation with cgroups v2                     
-| 8 | [`08-memguard/`](08-memguard/)           | Memory-bandwidth contention; protection with `memguard`          
-
-> Experiments 7 and 8 are more complex than the others. Experiment 7 introduces cgroups v2, which is not a main topic for this course. Experiment 8 requires building a kernel module (memguard) which is doable, but more involved.
+| 6 | [`06-sched-deadline/`](06-sched-deadline/)                       | `SCHED_DEADLINE` on vCPU threads and inside the guest
 
 What you will learn, in a nutshell:
 
@@ -51,8 +47,6 @@ What you will learn, in a nutshell:
 2. **The production view**: how real-world tools (libvirt and its CLI `virsh`) manage VMs without changing the underlying machinery (Exp 3).
 3. **I/O paths**: where virtualization overhead comes from at the device level, and how `virtio` reduces it (Exp 4).
 4. **Scheduling for RT**: how a VM is a process that can be pinned and prioritized, how `SCHED_DEADLINE` provides bandwidth-based guarantees (Exp 5 and 6).
-5. **Beyond pinning**: when CPU isolation isn't enough, because contention shifts to other shared resources: cgroups, memory bandwidth (Exp 7 and 8).
-
 ---
 
 ## Repository layout
@@ -75,9 +69,7 @@ rtis-kvm-qemu-lab/
 ├── 03-libvirt-virsh-virt-install/
 ├── 04-device-emulation-virtio/
 ├── 05-priorities-and-pinning/
-├── 06-sched-deadline/
-├── 07-two-vms-cgroups/
-└── 08-memguard/
+└── 06-sched-deadline/
 ```
 
 The base image lives **outside** the repo at `~/kvm-demo/debian-base.qcow2`, so that someone who clones the repo doesn't accidentally commit a 5 GiB qcow2.
@@ -151,9 +143,7 @@ Most experiments leave nothing behind because the base image is used with `-snap
 | ---------------------------------- | --------------------------------------------------------- |
 | A still-running QEMU process       | `pkill -f 'name vm1'` / `pkill -f 'name vm2'`             |
 | Affinity changes on host CPUs      | Disappear when QEMU exits                                 |
-| `chrt` scheduling-class changes    | Disappear when the process exits                          |
-| cgroups created in Exp 07          | `sudo rmdir /sys/fs/cgroup/rtdemo/...` (must be empty)    |
-| memguard kernel module             | `sudo rmmod memguard`                                     |
+| `chrt` scheduling-class changes    | Disappear when the process exits                          |                                 |
 | libvirt domains defined in Exp 03  | `virsh destroy <name>; virsh undefine <name>`             |
 
 The experiment READMEs have a **Cleanup** section that lists what to undo.
