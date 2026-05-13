@@ -369,8 +369,7 @@ Power off:
   (the `NI` column). Useful for non-RT VMs you just want to deprioritize.
 - `cpuset.cpus` and `cpuset.mems` in cgroups v2 give you stronger isolation
   than `taskset`; they're the cgroup-equivalent of affinity, plus they
-  exclude tasks from being moved into the cgroup by other means. We use
-  these in Experiment 07.
+  exclude tasks from being moved into the cgroup by other means.
 - The kernel docs `Documentation/scheduler/sched-rt-group.rst` and
   `Documentation/scheduler/sched-deadline.rst` are good references. The
   next experiment (06) goes into `SCHED_DEADLINE` in depth.
