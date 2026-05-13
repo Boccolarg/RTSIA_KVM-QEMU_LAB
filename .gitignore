@@ -1,0 +1,27 @@
+# Large/binary artifacts produced by setup and demos
+*.qcow2
+*.img
+*.iso
+seed.iso
+
+# QEMU runtime artifacts
+*.mon
+*.pid
+*.log
+
+# Build artifacts
+*.o
+*.ko
+*.mod
+*.mod.c
+.tmp_versions/
+Module.symvers
+modules.order
+06-sched-deadline/deadline_demo
+!06-sched-deadline/deadline_demo.c
+
+# Editor cruft
+*.swp
+*~
+.idea/
+.vscode/
