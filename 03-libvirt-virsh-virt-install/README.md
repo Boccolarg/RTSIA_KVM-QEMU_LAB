@@ -334,7 +334,6 @@ virsh schedinfo demo --set vcpu_period=1000000 --set vcpu_quota=500000 --live
 ```
 
 This applies a CPU bandwidth cap via cgroups (50% per vCPU over a 1ms window).
-We'll see cgroups in detail in Exp 07.
 
 ---
 
@@ -373,8 +372,7 @@ virsh list --all                # should not list 'demo' anymore
 - libvirt's value is the **management plane**: a declarative XML schema, a
   CLI (`virsh`) with verbs for the whole VM lifecycle, snapshots, pinning,
   cgroup-based resource control, and a stable API for higher tools.
-- Everything we did by hand with `taskset` / `chrt` / `cgroups` in later
-  experiments has a libvirt equivalent (`virsh vcpupin`, `virsh schedinfo`,
+- Everything we did by hand with `taskset` / `chrt` has a libvirt equivalent (`virsh vcpupin`, `virsh schedinfo`,
   `<cputune>` in the XML). For production: prefer the libvirt path.
 
 ---
