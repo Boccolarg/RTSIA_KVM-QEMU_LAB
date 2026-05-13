@@ -1,0 +1,34 @@
+#cloud-config
+# Cloud-init configuration for the demo guest image.
+# Consumed once on first boot to install packages and configure SSH.
+
+hostname: guest
+manage_etc_hosts: true
+
+users:
+  - name: root
+    lock_passwd: false
+    plain_text_passwd: demo
+
+ssh_pwauth: true
+disable_root: false
+
+package_update: true
+package_upgrade: false
+packages:
+  - rt-tests
+  - stress-ng
+  - openssh-server
+  - iperf3
+  - htop
+  - mbw
+  - sysstat
+  - numactl
+  - build-essential
+#  - linux-image-amd64
+
+runcmd:
+  - [ sed, -i, 's/^#PermitRootLogin.*/PermitRootLogin yes/', /etc/ssh/sshd_config ]
+  - [ systemctl, restart, ssh ]
+  - [ systemctl, enable, ssh ]
+#  - [ sh, -c, "mkdir -p /etc/network/interfaces.d && echo 'allow-hotplug ens4\niface ens4 inet dhcp' > /etc/network/interfaces.d/ens4" ]
